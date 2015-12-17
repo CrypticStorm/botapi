@@ -19,7 +19,7 @@ class Bot {
             options = defaultOptions;
         }
         this._bot = new Discordie();
-        this._bot.connect(options.login);
+        this._bot.connect(options.login, false);
 
         var prefix = options.prefix ? options.prefix : '`';
         this._commands = new Commands(false);
