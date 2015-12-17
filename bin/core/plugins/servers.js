@@ -9,7 +9,7 @@ var Commands = {
                 if (args.length >= 2) {
                     var arg = args[1];
                     arg = arg.substring(arg.lastIndexOf("/")+1);
-                    var invites = manager.bot.client.Invites;
+                    var invites = bot.client.Invites;
                     invites.accept(arg).then(function(invite) {
                         e.message.channel.sendMessage('Joined server: ' + invite.guild.name);
                     }, function(error) {
