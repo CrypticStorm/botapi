@@ -59,7 +59,7 @@ var Commands = {
                 if (e.message.isPrivate) {
                     channelConsumer(e.message.channel);
                 } else {
-                    e.message.author.openDM().then(channelConsumer.bind(this));
+                    e.message.author.openDM().then(channelConsumer);
                 }
             }
         }
