@@ -13,10 +13,12 @@ const defaultOptions = {
 };
 
 class Bot {
-    constructor(options) {
+    constructor(app, options) {
         if (!options) {
             options = defaultOptions;
         }
+        this._app = app;
+
         this._bot = new Discordie();
         this._bot.connect(options.login, false);
 
@@ -26,6 +28,9 @@ class Bot {
         this._plugins = new Plugins(this);
 
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
+            fs.writeFile('cfg/login.txt', this._bot.token, function() {
+                console.log('Wrote login token to disk.');
+            });
             console.log("Connected as: " + this._bot.User.username);
         }.bind(this));
 
@@ -45,6 +50,10 @@ class Bot {
             this._nomention.push(nomention_lines[i]);
         }
         console.log('Loaded ' + nomention_lines.length + ' nomention users.');
+    }
+
+    get app() {
+        return this._app;
     }
 
     get admins() {

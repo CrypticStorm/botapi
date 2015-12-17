@@ -12,7 +12,7 @@ const routes = require('./routes/index');
 const commands = require('./routes/commands');
 
 const app = express();
-app.bot = new bot();
+app.bot = new bot(app);
 
 /*
 // view engine setup
