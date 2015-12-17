@@ -27,7 +27,7 @@ class Bot {
 
         this._plugins = new Plugins(this);
 
-        this._bot.Dispatcher.on(Events.GATEWAY_READY, function(e){
+        this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
             console.log("Connected as: " + this._bot.User.username);
         }.bind(this));
 
