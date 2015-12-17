@@ -10,7 +10,6 @@ const Events = Discordie.Events;
 
 const defaultOptions = {
     login: new Login(),
-    prefix: '`'
 };
 
 class Bot {
@@ -21,7 +20,6 @@ class Bot {
         this._bot = new Discordie();
         this._bot.connect(options.login, false);
 
-        var prefix = options.prefix ? options.prefix : '`';
         this._commands = new Commands(false);
         this._responses = new Commands(true);
 
