@@ -1,8 +1,9 @@
 "use strict";
+
 const Discordie = require('discordie');
-const Login = require("./login")
+const Login = require('./login');
+const Commands = require('../cmd/commands');
 const Plugins = require('../plugin/plugins');
-const Commands = require("../cmd/commands");
 const fs = require('fs');
 const os = require('os');
 
@@ -22,6 +23,8 @@ class Bot {
         this._bot = new Discordie();
         this._bot.connect(options.login, false);
 
+        this._config = {};
+
         this._commands = new Commands(false);
         this._responses = new Commands(true);
 
@@ -37,17 +40,17 @@ class Bot {
         this._bot.Dispatcher.on(Events.MESSAGE_CREATE, this._commands.executor.bind(this._commands, this));
         this._bot.Dispatcher.on(Events.MESSAGE_CREATE, this._responses.executor.bind(this._responses, this));
 
-        this._admins = [];
+        this._config.admins = [];
         var admin_lines = fs.readFileSync('cfg/admins.txt', 'utf-8').split(os.EOL);
         for (var i = 0; i < admin_lines.length; i++) {
-            this._admins.push(admin_lines[i]);
+            this._config.admins.push(admin_lines[i]);
         }
         console.log('Loaded ' + admin_lines.length + ' admins.');
 
-        this._nomention = [];
+        this._config.nomention = [];
         var nomention_lines = fs.readFileSync('cfg/nomention.txt', 'utf-8').split(os.EOL);
         for (var i = 0; i < nomention_lines.length; i++) {
-            this._nomention.push(nomention_lines[i]);
+            this._config.nomention.push(nomention_lines[i]);
         }
         console.log('Loaded ' + nomention_lines.length + ' nomention users.');
     }
@@ -56,8 +59,8 @@ class Bot {
         return this._app;
     }
 
-    get admins() {
-        return this._admins;
+    get config() {
+        return this._config;
     }
 
     get client() {
@@ -78,9 +81,9 @@ class Bot {
 
     isAdmin(user) {
         if (typeof user === 'number') {
-            return ~this._admins.indexOf(user);
+            return ~this._config.admins.indexOf(user);
         } else if (user.hasOwnProperty('id')) {
-            return ~this._admins.indexOf(user.id);
+            return ~this._config.admins.indexOf(user.id);
         } else {
             return 0;
         }
@@ -90,9 +93,9 @@ class Bot {
         if (this.isAdmin(user)) {
             return true;
         } else if (typeof user === 'number') {
-            return ~this._nomention.indexOf(user);
+            return ~this._config.nomention.indexOf(user);
         } else if (user.hasOwnProperty('id')) {
-            return ~this._nomention.indexOf(user.id);
+            return ~this._config.nomention.indexOf(user.id);
         } else {
             return 0;
         }
