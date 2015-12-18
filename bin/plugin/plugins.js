@@ -1,15 +1,17 @@
 "use strict";
 
+const Express = require('express');
 const Plugin = require('./plugin');
 const Path = require('path');
 const FS = require('fs');
 
 class Plugins {
-    constructor(bot, directory) {
+    constructor(bot, app, directory) {
         this._bot = bot;
         this._coredirectory = Path.resolve('./bin/core/plugins');
         this._directory = Path.resolve('.', directory ? directory : './plugins');
         this._plugins = {};
+        this._pluginRouter = app.route('/');
 
         console.log('Created Plugin Manager (dir=' + this._directory + ')');
 
@@ -68,14 +70,6 @@ class Plugins {
         console.log('Loaded ' + (this.plugins.length - corePlugins) + ' plugins.');
     }
 
-    enableAll() {
-        for (var i in this._plugins) {
-            if (this._plugins.hasOwnProperty(i)) {
-                this.enable(this._plugins[i]);
-            }
-        }
-    }
-
     get bot() {
         return this._bot;
     }
@@ -93,7 +87,7 @@ class Plugins {
             enable = true;
         }
         var path = Path.normalize((this._coremode ? this._coredirectory : this._directory) + '/' + name);
-        var plugin = new Plugin(path, lock && this._coremode);
+        var plugin = new Plugin(this, path, lock && this._coremode);
         if (!this._plugins.hasOwnProperty(plugin.name)) {
             this._plugins[plugin.name] = plugin;
             plugin.load(this);
@@ -109,6 +103,30 @@ class Plugins {
             plugin.disable(this);
             plugin.unload(this);
             delete this._plugins[name];
+        }
+    }
+
+    enableAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.enable(this._plugins[i]);
+            }
+        }
+    }
+
+    disableAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.disable(this._plugins[i]);
+            }
+        }
+    }
+
+    removeAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.remove(this._plugins[i]);
+            }
         }
     }
 
@@ -159,6 +177,25 @@ class Plugins {
             var enabled = plugin.enabled;
             this.remove(name);
             this.add(name, enabled);
+        }
+    }
+
+    newRouter(plugin) {
+        var router = Express.Router();
+        Object.defineProperty(router, 'plugin', {
+            value: plugin.name,
+            writable: false
+        });
+        this._pluginRouter.use(router);
+        return router;
+    }
+
+    removeRouters(plugin) {
+        for (var i = this._pluginRouter.length - 1; i >= 0; i--) {
+            var layer = this._pluginRouter.stack[i];
+            if (layer.handle.plugin === plugin.name) {
+                this._pluginRouter.stack.slice(i, 1);
+            }
         }
     }
 }

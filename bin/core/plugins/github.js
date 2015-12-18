@@ -16,9 +16,9 @@ function load_config(bot, file) {
 
 const Commands = {
     name: 'Core-Github',
-    enable: function(manager) {
-        load_config(manager.bot, 'cfg/github.json');
-        manager.bot.app.post('github/bot', function (req, res) {
+    enable: function() {
+        load_config(this.manager.bot, 'cfg/github.json');
+        this.router.post('github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
                 console.log(req.headers);
                 var reponame = req.body.repository.name;
@@ -31,8 +31,8 @@ const Commands = {
                 }
                 message += '\n' + head_url + '\n';
 
-                for (var i = 0; i < manager.bot.config.github_json.channels.length; i++) {
-                    manager.bot.config.github_json.channels[i].sendMessage(message);
+                for (var i = 0; i < this.manager.bot.config.github_json.channels.length; i++) {
+                    this.manager.bot.config.github_json.channels[i].sendMessage(message);
                 }
             } else {
                 console.log('Unknown github message:');

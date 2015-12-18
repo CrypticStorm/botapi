@@ -28,7 +28,7 @@ class Bot {
         this._commands = new Commands(false, true);
         this._responses = new Commands(true, false);
 
-        this._plugins = new Plugins(this);
+        this._plugins = new Plugins(this, app);
 
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
             fs.writeFile('cfg/login.txt', this._bot.token, function() {
@@ -55,6 +55,12 @@ class Bot {
             this._config.nomention.push(nomention_lines[i]);
         }
         console.log('Loaded ' + nomention_lines.length + ' nomention users.');
+
+        process.on('SIGINT', function() {
+            console.log('Shutting down');
+            this._plugins.removeAll();
+            process.exit();
+        }.bind(this));
     }
 
     get app() {
