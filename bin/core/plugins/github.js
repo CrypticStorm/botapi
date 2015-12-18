@@ -17,7 +17,7 @@ function load_config(bot, file) {
 const Commands = {
     name: 'Core-Github',
     enable: function(manager) {
-        load_config(manager.bot.config, 'cfg/github.json');
+        load_config(manager.bot, 'cfg/github.json');
         manager.bot.app.post('github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
                 console.log(req.headers);
