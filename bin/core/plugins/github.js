@@ -14,7 +14,7 @@ const Commands = {
                 var branch = req.body.ref.substring(req.body.ref.lastIndexOf('/') + 1);
                 var head_url = req.body.head_commit.url;
                 var commits = req.body.commits;
-                var message = 'New commit' + (commits.length > 1 ? 's' : '') + ' to ' + reponame + ' at branch `' + branch + '`:\n\n'
+                var message = 'New commit' + (commits.length > 1 ? 's' : '') + ' to `' + reponame + '` at branch `' + branch + '`:\n\n'
                 for (var i = 0; i < commits.length; i++) {
                     message += '`' + commits[i].id.substring(0, 8) + '`: ' + commits[i].message + ' (' + commits[i].author.name + ')' + '\n';
                 }
