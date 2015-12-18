@@ -18,18 +18,17 @@ const Commands = {
     name: 'Core-Github',
     enable: function() {
         load_config(this.manager.bot, 'cfg/github.json');
-        this.router.post('github/bot', function (req, res) {
+        this.router.post('/github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
                 console.log(req.headers);
                 var reponame = req.body.repository.name;
                 var branch = req.body.ref.substring(req.body.ref.lastIndexOf('/') + 1);
                 var head_url = req.body.head_commit.url;
                 var commits = req.body.commits;
-                var message = 'New commit' + (commits.length > 1 ? 's' : '') + ' to `' + reponame + '` at branch `' + branch + '`:\n\n'
+                var message = '**' + reponame + '/' + branch + '**\n'
                 for (var i = 0; i < commits.length; i++) {
-                    message += '`' + commits[i].id.substring(0, 8) + '`: ' + commits[i].message + ' (' + commits[i].author.name + ')' + '\n';
+                    message += '`' + commits[i].id.substring(0, 8) + '` ' + commits[i].message + '\n';
                 }
-                message += '\n' + head_url + '\n';
 
                 for (var i = 0; i < this.manager.bot.config.github_json.channels.length; i++) {
                     this.manager.bot.config.github_json.channels[i].sendMessage(message);
