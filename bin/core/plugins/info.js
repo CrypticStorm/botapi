@@ -1,9 +1,9 @@
 var Commands = {
-    name: 'Core-Users',
+    name: 'Core-Info',
     commands: [
         {
-            name: 'info',
-            aliases: ['user'],
+            name: 'user',
+            aliases: ['iu'],
             callback: function (e, bot) {
                 var user = e.message.author;
                 for (var i in e.message.mentions) {
@@ -24,6 +24,30 @@ var Commands = {
                     message += 'GameID: ' + gid + '\n';
                 }
                 message += '```';
+
+                e.message.channel.sendMessage(message);
+            }
+        },
+        {
+            name: 'channel',
+            aliases: ['ic', 'ch'],
+            callback: function (e, bot) {
+                var channel = e.message.channel;
+
+                var message;
+                if (channel.is_private) {
+                    message = 'Direct Message channels have no additional information.';
+                } else {
+                    message = '```';
+                    message += 'Channel Information: ' + channel.name + ' (' + channel.type + ')\n';
+                    message += 'Guild Info: ' + channel.guild_id + ' (' + channel.position + ')\n';
+                    if (channel.topic) {
+                        message += 'Topic: ' + channel.topic + '\n';
+                    } else {
+                        message += 'No Topic\n';
+                    }
+                    message += '```';
+                }
 
                 e.message.channel.sendMessage(message);
             }
