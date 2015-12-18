@@ -31,7 +31,7 @@ class Bot {
         this._plugins = new Plugins(this, app);
 
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
-            fs.writeFile('cfg/login.txt', this._bot.token, function() {
+            fs.writeFile('cfg/token.txt', this._bot.token, function() {
                 console.log('Wrote login token to disk.');
             });
             console.log("Connected as: " + this._bot.User.username);
