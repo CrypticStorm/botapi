@@ -33,7 +33,7 @@ class Plugins {
         for(var i in files) {
             if (files.hasOwnProperty(i)) {
                 try {
-                    this.add(files[i].substring(0, files[i].length-3), true, true);
+                    this.add(files[i].substring(0, files[i].length-3), false, true);
                 } catch(err) {
                     console.log('Error loading core plugin: ' + files[i]);
                     console.log(err);
@@ -41,12 +41,10 @@ class Plugins {
             }
         }
         console.log('Loaded ' + this.plugins.length + ' core plugins.');
-        console.log('Enabled ' + this.active.length + ' core plugins.');
     }
 
     _loadPlugins() {
         var corePlugins = this.plugins.length;
-        var activeCorePlugins = this.active.length;
         var files = [];
         FS.readdirSync(this._directory).forEach(function(filename) {
             if (filename.endsWith('.js')) {
@@ -60,7 +58,7 @@ class Plugins {
         for(var i in files) {
             if (files.hasOwnProperty(i)) {
                 try {
-                    this.add(files[i].substring(0, files[i].length-3), true, false);
+                    this.add(files[i].substring(0, files[i].length-3), false, false);
                 } catch(err) {
                     console.log('Error loading plugin: ' + files[i]);
                     console.log(err);
@@ -68,7 +66,12 @@ class Plugins {
             }
         }
         console.log('Loaded ' + (this.plugins.length - corePlugins) + ' plugins.');
-        console.log('Enabled ' + (this.active.length - activeCorePlugins) + ' plugins.');
+    }
+
+    enableAll() {
+        for (var i in this._plugins) {
+            this.enable(this._plugins[i]);
+        }
     }
 
     get bot() {
