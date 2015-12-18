@@ -19,10 +19,10 @@ var Commands = {
                 message += 'ID: ' + user.id + '\n';
                 message += 'Avatar: ' + user.avatarURL + '\n';
                 message += 'Status: ' + user.status + '\n';
-                var gid = user.gameId;
-                if (gid) {
-                    message += 'GameID: ' + gid + '\n';
-                }
+                //var gid = user.gameId;
+                //if (gid) {
+                //    message += 'GameID: ' + gid + '\n';
+                //}
                 message += '```';
 
                 e.message.channel.sendMessage(message);
