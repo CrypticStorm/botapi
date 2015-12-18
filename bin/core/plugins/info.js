@@ -40,7 +40,9 @@ var Commands = {
                 } else {
                     message = '```';
                     message += 'Channel Information: ' + channel.name + ' (' + channel.type + ')\n';
-                    message += 'Guild Info: ' + channel.guild_id + ' (' + channel.position + ')\n';
+                    message += 'Channel ID: ' + channel.id + '\n';
+                    message += 'Guild ID: ' + channel.guild_id + '\n';
+                    message += 'Position: ' + channel.position + '\n';
                     if (channel.topic) {
                         message += 'Topic: ' + channel.topic + '\n';
                     } else {
