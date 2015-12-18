@@ -38,7 +38,7 @@ class Plugin {
 
     get router() {
         if (!this._router) {
-            this._router = this._manager.bot.newRouter();
+            this._router = this._manager.newRouter();
         }
         return this._router;
     }
