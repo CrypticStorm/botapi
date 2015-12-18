@@ -70,7 +70,9 @@ class Plugins {
 
     enableAll() {
         for (var i in this._plugins) {
-            this.enable(this._plugins[i]);
+            if (this._plugins.hasOwnProperty(i)) {
+                this.enable(this._plugins[i]);
+            }
         }
     }
 
