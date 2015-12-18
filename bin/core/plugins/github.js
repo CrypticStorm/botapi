@@ -18,13 +18,11 @@ const Commands = {
                     var branch = req.body.ref.substring(req.body.ref.lastIndexOf('/') + 1);
                     var head_url = req.body.head_commit.url;
                     var commits = req.body.commits;
-                    var message = 'New commit' + (commits.length > 1 ? 's' : '') + ' to `' + branch + '`:\n'
-                    message += '```';
+                    var message = 'New commit' + (commits.length > 1 ? 's' : '') + ' to `' + branch + '`:\n\n'
                     for (var i = 0; i < commits.length; i++) {
-                        message += commits[i].id.substring(0, 8) + ': ' + commits[i].message + '(' + commits[i].author.name + ')' + '\n';
+                        message += '`' + commits[i].id.substring(0, 8) + '`: ' + commits[i].message + ' (' + commits[i].author.name + ')' + '\n';
                     }
-                    message += '```\n';
-                    message += head_url + '\n';
+                    message += '\n' + head_url + '\n';
 
                     for (var i = 0; i < channels.length; i++) {
                         manager.bot.client.Channels.get(channels[i]).sendMessage(message);
