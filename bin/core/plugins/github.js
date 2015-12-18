@@ -2,12 +2,23 @@
 
 const fs = require('fs');
 const os = require('os');
+const Utils = require('../utils');
+
+function load_config(bot, file) {
+    bot.config.github_json = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    var channel_ids = bot.config.github_json.channels;
+    var channels = [];
+    for (var i = 0; i < channel_ids.length; i++) {
+        channels.push(bot.client.Channels.get(channel_ids[i]));
+    }
+    bot.config.github_json.channels = channels;
+}
 
 const Commands = {
     name: 'Core-Github',
-    load: function(manager) {
-        manager.bot.config.github_json = JSON.parse(fs.readFileSync('cfg/github.json', 'utf-8'));
-        manager.bot.app.post('/github/bot', function (req, res) {
+    enable: function(manager) {
+        load_config(manager.bot.config, 'cfg/github.json');
+        manager.bot.app.post('github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
                 console.log(req.headers);
                 var reponame = req.body.repository.name;
@@ -31,13 +42,8 @@ const Commands = {
             res.send('ok');
         });
     },
-    enable: function(manager) {
-        var channel_ids = manager.bot.config.github_json.channels;
-        var channels = [];
-        for (var i = 0; i < channel_ids.length; i++) {
-            channels.push(manager.bot.client.Channels.get(channel_ids[i]));
-        }
-        manager.bot.config.github_json.channels = channels;
+    disable: function(manager) {
+        Utils.deleteRoute(manager.bot.app, "github/bot")
     }
 };
 
