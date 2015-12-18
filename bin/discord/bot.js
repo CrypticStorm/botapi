@@ -25,8 +25,8 @@ class Bot {
 
         this._config = {};
 
-        this._commands = new Commands(false);
-        this._responses = new Commands(true);
+        this._commands = new Commands(false, true);
+        this._responses = new Commands(true, false);
 
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
             fs.writeFile('cfg/login.txt', this._bot.token, function() {
