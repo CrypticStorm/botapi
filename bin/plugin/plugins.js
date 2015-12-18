@@ -11,7 +11,8 @@ class Plugins {
         this._coredirectory = Path.resolve('./bin/core/plugins');
         this._directory = Path.resolve('.', directory ? directory : './plugins');
         this._plugins = {};
-        this._pluginRouter = app.route('/');
+        this._pluginRouter = Express.Router();
+        app.use(this._pluginRouter);
 
         console.log('Created Plugin Manager (dir=' + this._directory + ')');
 
