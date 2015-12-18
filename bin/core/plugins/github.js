@@ -40,7 +40,7 @@ const Commands = {
                 console.log(req.body);
             }
             res.send('ok');
-        });
+        }.bind(this));
     },
     disable: function(manager) {
         Utils.deleteRoute(manager.bot.app, "github/bot")
