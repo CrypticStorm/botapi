@@ -28,13 +28,13 @@ class Bot {
         this._commands = new Commands(false);
         this._responses = new Commands(true);
 
-        this._plugins = new Plugins(this);
-
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
             fs.writeFile('cfg/login.txt', this._bot.token, function() {
                 console.log('Wrote login token to disk.');
             });
             console.log("Connected as: " + this._bot.User.username);
+
+            this._plugins = new Plugins(this);
         }.bind(this));
 
         this._bot.Dispatcher.on(Events.MESSAGE_CREATE, this._commands.executor.bind(this._commands, this));
