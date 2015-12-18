@@ -12,8 +12,6 @@ const routes = require('./routes/index');
 const commands = require('./routes/commands');
 
 const app = express();
-app.bot = new bot(app);
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -26,6 +24,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.bot = new bot(app);
 /*
 app.use('/', routes);
 app.use('/commands', commands);
