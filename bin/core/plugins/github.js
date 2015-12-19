@@ -20,10 +20,8 @@ const Commands = {
         load_config(this.manager.bot, 'cfg/github.json');
         this.router.post('/github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
-                console.log(req.headers);
                 var reponame = req.body.repository.name;
                 var branch = req.body.ref.substring(req.body.ref.lastIndexOf('/') + 1);
-                var head_url = req.body.head_commit.url;
                 var commits = req.body.commits;
                 var message = '**' + reponame + '/' + branch + '**\n'
                 for (var i = 0; i < commits.length; i++) {
@@ -42,7 +40,7 @@ const Commands = {
         }.bind(this));
     },
     disable: function(manager) {
-        Utils.deleteRoute(manager.bot.app, "github/bot")
+        Utils.deleteRoute(manager.bot.app, "/github/bot")
     }
 };
 
