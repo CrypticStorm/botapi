@@ -14,16 +14,14 @@ var Commands = {
                         }
                     }
                 }
-                var message = '```';
-                message += 'Information about: ' + user.username + '\n';
-                message += 'ID: ' + user.id + '\n';
-                message += 'Avatar: ' + user.avatarURL + '\n';
-                message += 'Status: ' + user.status + '\n';
+                var message = '**' + user.username + '**\n';
+                message += '`ID` ' + user.id + '\n';
+                message += '`Avatar` ' + user.avatarURL + '\n';
+                message += '`Status` ' + user.status;
                 //var gid = user.gameId;
                 //if (gid) {
                 //    message += 'GameID: ' + gid + '\n';
                 //}
-                message += '```';
 
                 e.message.channel.sendMessage(message);
             }
@@ -38,17 +36,16 @@ var Commands = {
                 if (channel.is_private) {
                     message = 'Direct Message channels have no additional information.';
                 } else {
-                    message = '```';
-                    message += 'Channel Information: ' + channel.name + ' (' + channel.type + ')\n';
-                    message += 'Channel ID: ' + channel.id + '\n';
-                    message += 'Guild ID: ' + channel.guild_id + '\n';
-                    message += 'Position: ' + channel.position + '\n';
+                    var channel_prefix = channel.type === 'text' ? '#' : '';
+                    message = '**' + channel_prefix + channel.name + '**\n';
+                    message += '`Channel` ' + channel.id + '\n';
+                    message += '`Guild` ' + channel.guild_id + '\n';
+                    message += '`Position` ' + channel.position + '\n';
                     if (channel.topic) {
-                        message += 'Topic: ' + channel.topic + '\n';
+                        message += '`Topic` ' + channel.topic + '';
                     } else {
-                        message += 'No Topic\n';
+                        message += 'No Topic';
                     }
-                    message += '```';
                 }
 
                 e.message.channel.sendMessage(message);
