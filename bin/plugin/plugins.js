@@ -164,6 +164,7 @@ class Plugins {
             if (plugin.disable(this)) {
                 this._bot.commands.disable(plugin);
                 this._bot.responses.disable(plugin);
+                this.removeRouters(plugin);
                 console.log('Disabled Plugin: ' + plugin.name)
             }
         }

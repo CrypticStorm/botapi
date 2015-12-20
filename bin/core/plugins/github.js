@@ -38,9 +38,6 @@ const Commands = {
             }
             res.status(200).end();
         }.bind(this));
-    },
-    disable: function(manager) {
-        Utils.deleteRoute(manager.bot.app, "/github/bot")
     }
 };
 
