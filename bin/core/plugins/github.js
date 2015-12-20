@@ -36,7 +36,7 @@ const Commands = {
                 console.log(req.headers);
                 console.log(req.body);
             }
-            res.send('ok');
+            res.status(200).end();
         }.bind(this));
     },
     disable: function(manager) {
