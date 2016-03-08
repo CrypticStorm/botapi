@@ -1,34 +1,38 @@
-var Commands = {
-    name: 'Core-Users',
-    commands: [
-        {
-            name: 'info',
-            aliases: ['user'],
-            callback: function (e, bot) {
-                var user = e.message.author;
-                for (var i in e.message.mentions) {
-                    if (e.message.mentions.hasOwnProperty(i)) {
-                        if (e.message.mentions[i].id != bot.client.User.id) {
-                            user = e.message.mentions[i];
-                            break;
-                        }
-                    }
-                }
-                var message = '```';
-                message += 'Information about: ' + user.username + '\n';
-                message += 'ID: ' + user.id + '\n';
-                message += 'Avatar: ' + user.avatarURL + '\n';
-                message += 'Status: ' + user.status + '\n';
-                var gid = user.gameId;
-                if (gid) {
-                    message += 'GameID: ' + gid + '\n';
-                }
-                message += '```';
+"use strict";
 
-                e.message.channel.sendMessage(message);
+const Events = require('discordie').Events;
+
+function saveUser(bot, user) {
+    bot.database.query('INSERT INTO `users` (`id`) VALUES (?) ON DUPLICATE KEY UPDATE `last_seen` = NOW()',
+        [user.id], function(error, results, fields) {
+            if (error) {
+                console.log(error);
             }
-        }
-    ]
+        });
+}
+
+function saveGuild(bot, guild) {
+    guild.members.forEach(member => saveUser(bot, member));
+}
+
+function onLogout(bot, event) {
+    if (event.user.previousStatus == 'online' && event.user.status == 'offline') {
+        saveUser(bot, event.user);
+    }
+}
+
+var Plugin = {
+    name: 'Core-Users',
+    version: '1.0.0',
+    enable: function() {
+        this.manager.bot.addDispatch(Events.PRESENCE_UPDATE, onLogout.bind(this, this.manager.bot));
+        this.manager.bot.addDispatch(Events.GUILD_MEMBER_ADD, saveUser.bind(this, this.manager.bot));
+        this.manager.bot.addDispatch(Events.GUILD_MEMBER_REMOVE, saveUser.bind(this, this.manager.bot));
+        this.manager.bot.Users.forEach(member => saveUser(this.manager.bot, member));
+    },
+    disable: function() {
+        this.manager.bot.Users.forEach(member => saveUser(this.manager.bot, member));
+    }
 };
 
-module.exports = Commands;
+module.exports = Plugin;

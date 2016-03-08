@@ -11,33 +11,19 @@ var tag_command = function(bot, event) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
-    } else if (bot.noMention(event.message.author)) {
-        text = event.message.content;
     } else {
         return;
     }
+    event.internal = {text: text};
     var cmd = this.get(text.split(' ')[0]);
     if (cmd) {
-        if (bot.isAdmin(event.message.author) || !cmd.admin) {
-            cmd.callback(event, bot);
-        } else {
-            event.message.reply('ばか！管理者じゃないです。');
-        }
-    }
-};
-
-var no_tag_command = function(bot, event) {
-    if (event.message.author == bot.client.User) {
-        return;
-    }
-    var name = event.message.content.split(" ")[0];
-    var cmd = this.get(name);
-    if (cmd) {
-        if (bot.isAdmin(event.message.author) || !cmd.admin) {
-            cmd.callback(event, bot);
-        } else {
-            event.message.reply('ばか！管理者じゃないです。');
-        }
+        bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
+            if (hasPermission) {
+                cmd.callback(event, bot);
+            } else {
+                event.message.reply('ばか！管理者じゃないです。');
+            }
+        });
     }
 };
 
@@ -50,40 +36,39 @@ var regex_commands = function(bot, event) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
-    } else if (bot.noMention(event.message.author)) {
-        text = event.message.content;
     } else {
         return;
     }
-    for (var regex in this._commands) {
-        if (this._commands.hasOwnProperty(regex)) {
-            if (text.match(regex)) {
-                var cmd = this.get(regex);
+    event.internal = {text: text};
+    for (var cmd_regex in this._commands) {
+        if (this._commands.hasOwnProperty(cmd_regex)) {
+            if (text.match(cmd_regex)) {
+                var cmd = this.get(cmd_regex);
                 if (cmd) {
-                    if (bot.isAdmin(event.message.author) || !cmd.admin) {
-                        if (cmd.callback(event, bot)) {
-                            return;
+                    bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
+                        if (hasPermission) {
+                            cmd.callback(event, bot);
+                        } else {
+                            event.message.reply('ばか！管理者じゃないです。');
                         }
-                    } else {
-                        event.message.reply('ばか！管理者じゃないです。');
-                        return;
-                    }
+                    });
+                    return;
                 }
             }
         }
     }
-    for (var regex in this._aliascommands) {
-        if (this._aliascommands.hasOwnProperty(regex)) {
-            if (text.match(regex)) {
-                var cmd = this.get(regex);
-                if (cmd) {
-                    if (bot.isAdmin(event.message.author) || !cmd.admin) {
-                        if (cmd.callback(event, bot)) {
-                            return;
+    for (var alias_regex in this._aliascommands) {
+        if (this._aliascommands.hasOwnProperty(alias_regex)) {
+            if (text.match(alias_regex)) {
+                var alias_cmd = this.get(alias_regex);
+                if (alias_cmd) {
+                    bot.hasPermission(event.message.author, alias_cmd.permission).then(function(hasPermission) {
+                        if (hasPermission) {
+                            alias_cmd.callback(event, bot);
+                        } else {
+                            event.message.reply('ばか！管理者じゃないです。');
                         }
-                    } else {
-                        event.message.reply('ばか！管理者じゃないです。');
-                    }
+                    });
                     return;
                 }
             }
@@ -92,8 +77,9 @@ var regex_commands = function(bot, event) {
 };
 
 class Commands {
-    constructor(regex) {
+    constructor(regex, print_new) {
         this._regex = regex;
+        this._print_new  = print_new;
         this._commands = {};
         this._aliascommands = {};
         this._executor = (this._regex ? regex_commands : tag_command).bind(this);
@@ -107,7 +93,9 @@ class Commands {
                 this._aliascommands[cmd.aliases[i]] = cmd;
             }
         }
-        console.log('Added command: ' + cmd.name);
+        if (this._print_new) {
+            console.log('Added command: ' + cmd.name);
+        }
     };
 
     get(name) {

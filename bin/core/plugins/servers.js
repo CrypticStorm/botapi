@@ -1,9 +1,12 @@
-var Commands = {
+"use strict";
+
+var Plugin = {
     name: 'Core-Servers',
+    version: '1.0.0',
     commands: [
         {
             name: 'join',
-            admin: true,
+            permission: 'cmd_join',
             callback: function(e, bot){
                 var args = e.message.content.split(" ");
                 if (args.length >= 2) {
@@ -22,4 +25,4 @@ var Commands = {
     ]
 };
 
-module.exports = Commands;
+module.exports = Plugin;

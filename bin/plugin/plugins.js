@@ -1,15 +1,18 @@
 "use strict";
 
+const Express = require('express');
 const Plugin = require('./plugin');
 const Path = require('path');
 const FS = require('fs');
 
 class Plugins {
-    constructor(bot, directory) {
+    constructor(bot, app, directory) {
         this._bot = bot;
         this._coredirectory = Path.resolve('./bin/core/plugins');
         this._directory = Path.resolve('.', directory ? directory : './plugins');
         this._plugins = {};
+        this._pluginRouter = Express.Router();
+        app.use(this._pluginRouter);
 
         console.log('Created Plugin Manager (dir=' + this._directory + ')');
 
@@ -33,7 +36,7 @@ class Plugins {
         for(var i in files) {
             if (files.hasOwnProperty(i)) {
                 try {
-                    this.add(files[i].substring(0, files[i].length-3), true, true);
+                    this.add(files[i].substring(0, files[i].length-3), false, true);
                 } catch(err) {
                     console.log('Error loading core plugin: ' + files[i]);
                     console.log(err);
@@ -41,12 +44,10 @@ class Plugins {
             }
         }
         console.log('Loaded ' + this.plugins.length + ' core plugins.');
-        console.log('Enabled ' + this.active.length + ' core plugins.');
     }
 
     _loadPlugins() {
         var corePlugins = this.plugins.length;
-        var activeCorePlugins = this.active.length;
         var files = [];
         FS.readdirSync(this._directory).forEach(function(filename) {
             if (filename.endsWith('.js')) {
@@ -60,7 +61,7 @@ class Plugins {
         for(var i in files) {
             if (files.hasOwnProperty(i)) {
                 try {
-                    this.add(files[i].substring(0, files[i].length-3), true, false);
+                    this.add(files[i].substring(0, files[i].length-3), false, false);
                 } catch(err) {
                     console.log('Error loading plugin: ' + files[i]);
                     console.log(err);
@@ -68,7 +69,6 @@ class Plugins {
             }
         }
         console.log('Loaded ' + (this.plugins.length - corePlugins) + ' plugins.');
-        console.log('Enabled ' + (this.active.length - activeCorePlugins) + ' plugins.');
     }
 
     get bot() {
@@ -88,7 +88,7 @@ class Plugins {
             enable = true;
         }
         var path = Path.normalize((this._coremode ? this._coredirectory : this._directory) + '/' + name);
-        var plugin = new Plugin(path, lock && this._coremode);
+        var plugin = new Plugin(this, path, lock && this._coremode);
         if (!this._plugins.hasOwnProperty(plugin.name)) {
             this._plugins[plugin.name] = plugin;
             plugin.load(this);
@@ -104,6 +104,30 @@ class Plugins {
             plugin.disable(this);
             plugin.unload(this);
             delete this._plugins[name];
+        }
+    }
+
+    enableAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.enable(this._plugins[i]);
+            }
+        }
+    }
+
+    disableAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.disable(this._plugins[i]);
+            }
+        }
+    }
+
+    removeAll() {
+        for (var i in this._plugins) {
+            if (this._plugins.hasOwnProperty(i)) {
+                this.remove(this._plugins[i]);
+            }
         }
     }
 
@@ -140,6 +164,7 @@ class Plugins {
             if (plugin.disable(this)) {
                 this._bot.commands.disable(plugin);
                 this._bot.responses.disable(plugin);
+                this.removeRouters(plugin);
                 console.log('Disabled Plugin: ' + plugin.name)
             }
         }
@@ -154,6 +179,28 @@ class Plugins {
             var enabled = plugin.enabled;
             this.remove(name);
             this.add(name, enabled);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    newRouter(plugin) {
+        var router = Express.Router();
+        Object.defineProperty(router, 'plugin', {
+            value: plugin.name,
+            writable: false
+        });
+        this._pluginRouter.use(router);
+        return router;
+    }
+
+    removeRouters(plugin) {
+        for (var i = this._pluginRouter.length - 1; i >= 0; i--) {
+            var layer = this._pluginRouter.stack[i];
+            if (layer.handle.plugin === plugin.name) {
+                this._pluginRouter.stack.slice(i, 1);
+            }
         }
     }
 }

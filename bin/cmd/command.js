@@ -13,7 +13,7 @@ class Command {
         this._plugin = plugin;
         this._name = !regex || options.isEscaped ? options.name : '^' + Utils.escapeRegExp(options.name) + '$';
         this._aliases = !regex || options.isEscaped ? options.aliases : options.aliases.map(function(alias) {return '^' + Utils.escapeRegExp(alias) + '$'});
-        this._admin = (typeof options.admin === 'undefined') ? false : options.admin;
+        this._permission = (typeof options.permission === 'undefined') ? '' : options.permission;
         this._help = options.help ? options.help : "";
         this._callback = options.callback ? options.callback : function(){}
     }
@@ -30,8 +30,8 @@ class Command {
         return this._aliases;
     }
 
-    get admin() {
-        return this._admin;
+    get permission() {
+        return this._permission;
     }
 
     get help() {

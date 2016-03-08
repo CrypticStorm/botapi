@@ -1,7 +1,8 @@
 "use strict";
 
 class Plugin {
-    constructor(filepath, lock) {
+    constructor(manager, filepath, lock) {
+        this._manager = manager;
         this._internal = require(filepath);
         this._loaded = false;
         this._enabled = false;
@@ -15,8 +16,20 @@ class Plugin {
         }
     }
 
+    get manager() {
+        return this._manager;
+    }
+
     get name() {
         return this._internal.name;
+    }
+
+    get version() {
+        if (this._internal.version) {
+            return this._internal.version;
+        } else {
+            return undefined;
+        }
     }
 
     get locked() {
@@ -29,6 +42,13 @@ class Plugin {
 
     get enabled() {
         return this._enabled;
+    }
+
+    get router() {
+        if (!this._router) {
+            this._router = this._manager.newRouter(this);
+        }
+        return this._router;
     }
 
     get commands() {
@@ -47,35 +67,35 @@ class Plugin {
         }
     }
 
-    load(manager) {
+    load() {
         if (this._loaded) {
             return false;
         }
         if (this._internal.hasOwnProperty('load')) {
-            var func = this._internal.load;
+            var func = this._internal.load.bind(this);
             if (typeof func === 'function') {
-                func(manager);
+                func();
             }
         }
         this._loaded = true;
         return true;
     }
 
-    unload(manager) {
+    unload() {
         if (!this._loaded) {
             return false;
         }
         if (this._internal.hasOwnProperty('unload')) {
-            var func = this._internal.unload;
+            var func = this._internal.unload.bind(this);
             if (typeof func === 'function') {
-                func(manager);
+                func();
             }
         }
         this._loaded = false;
         return true;
     }
 
-    enable(manager) {
+    enable() {
         if (!this._loaded) {
             return false;
         }
@@ -83,16 +103,16 @@ class Plugin {
             return false;
         }
         if (this._internal.hasOwnProperty('enable')) {
-            var func = this._internal.enable;
+            var func = this._internal.enable.bind(this);
             if (typeof func === 'function') {
-                func(manager);
+                func();
             }
         }
         this._enabled = true;
         return true;
     }
 
-    disable(manager) {
+    disable() {
         if (!this._loaded) {
             return false;
         }
@@ -100,9 +120,9 @@ class Plugin {
             return false;
         }
         if (this._internal.hasOwnProperty('disable')) {
-            var func = this._internal.disable;
+            var func = this._internal.disable.bind(this);
             if (typeof func === 'function') {
-                func(manager);
+                func();
             }
         }
         this._enabled = false;
