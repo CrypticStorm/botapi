@@ -1,8 +1,7 @@
 "use strict";
 
 class Plugin {
-    constructor(manager, filepath, lock) {
-        this._manager = manager;
+    constructor(filepath, lock) {
         this._internal = require(filepath);
         this._loaded = false;
         this._enabled = false;
@@ -14,10 +13,6 @@ class Plugin {
         if (!this._internal.hasOwnProperty('load') && !this._internal.hasOwnProperty('enable') && !this._internal.hasOwnProperty('commands') && !this._internal.hasOwnProperty('responses')) {
             throw 'no load or enable';
         }
-    }
-
-    get manager() {
-        return this._manager;
     }
 
     get name() {
@@ -36,13 +31,6 @@ class Plugin {
         return this._enabled;
     }
 
-    get router() {
-        if (!this._router) {
-            this._router = this._manager.newRouter(this);
-        }
-        return this._router;
-    }
-
     get commands() {
         if (this._internal.hasOwnProperty('commands')) {
             return this._internal.commands;
@@ -59,35 +47,35 @@ class Plugin {
         }
     }
 
-    load() {
+    load(manager) {
         if (this._loaded) {
             return false;
         }
         if (this._internal.hasOwnProperty('load')) {
-            var func = this._internal.load.bind(this);
+            var func = this._internal.load;
             if (typeof func === 'function') {
-                func();
+                func(manager);
             }
         }
         this._loaded = true;
         return true;
     }
 
-    unload() {
+    unload(manager) {
         if (!this._loaded) {
             return false;
         }
         if (this._internal.hasOwnProperty('unload')) {
-            var func = this._internal.unload.bind(this);
+            var func = this._internal.unload;
             if (typeof func === 'function') {
-                func();
+                func(manager);
             }
         }
         this._loaded = false;
         return true;
     }
 
-    enable() {
+    enable(manager) {
         if (!this._loaded) {
             return false;
         }
@@ -95,16 +83,16 @@ class Plugin {
             return false;
         }
         if (this._internal.hasOwnProperty('enable')) {
-            var func = this._internal.enable.bind(this);
+            var func = this._internal.enable;
             if (typeof func === 'function') {
-                func();
+                func(manager);
             }
         }
         this._enabled = true;
         return true;
     }
 
-    disable() {
+    disable(manager) {
         if (!this._loaded) {
             return false;
         }
@@ -112,9 +100,9 @@ class Plugin {
             return false;
         }
         if (this._internal.hasOwnProperty('disable')) {
-            var func = this._internal.disable.bind(this);
+            var func = this._internal.disable;
             if (typeof func === 'function') {
-                func();
+                func(manager);
             }
         }
         this._enabled = false;

@@ -92,9 +92,8 @@ var regex_commands = function(bot, event) {
 };
 
 class Commands {
-    constructor(regex, print_new) {
+    constructor(regex) {
         this._regex = regex;
-        this._print_new  = print_new;
         this._commands = {};
         this._aliascommands = {};
         this._executor = (this._regex ? regex_commands : tag_command).bind(this);
@@ -108,9 +107,7 @@ class Commands {
                 this._aliascommands[cmd.aliases[i]] = cmd;
             }
         }
-        if (this._print_new) {
-            console.log('Added command: ' + cmd.name);
-        }
+        console.log('Added command: ' + cmd.name);
     };
 
     get(name) {
