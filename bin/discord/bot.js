@@ -113,6 +113,10 @@ class Bot {
         this._bot.Dispatcher.on(event, func);
     }
 
+    setStatus(status, game) {
+        this._bot.User.setStatus(status, game);
+    }
+
     get Guilds() {
         return this._bot.Guilds;
     }
