@@ -1,7 +1,23 @@
 "use strict";
 
+const Discordie = require('discordie');
+const StatusTypes = Discordie.StatusTypes;
+const fs = require('fs');
+
 var Plugin = {
     name: 'Core-Status',
+    enable: function() {
+        const bot = this.manager.bot;
+        fs.readFile('cfg/status.txt', 'utf8', function(error, data) {
+            if (error) {
+                console.log(error.stack ? error.stack : error);
+                return;
+            }
+            bot.setStatus(StatusTypes.ONLINE, {
+                name: data
+            });
+        });
+    },
     commands: [
         {
             name: 'baka',
@@ -78,7 +94,7 @@ var Plugin = {
         {
             name: 'commands',
             aliases: ['cmds', 'help'],
-            callback: function(e, bot){
+            callback: function(event, bot){
                 var channelConsumer = function(channel) {
                     var cmds = bot.commands.list();
                     //if (!bot.isAdmin(e.message.author)) {
@@ -95,11 +111,29 @@ var Plugin = {
                     }
                     channel.sendMessage(cmdList.replace(/`/g, '\\`'));
                 };
-                if (e.message.isPrivate) {
-                    channelConsumer(e.message.channel);
+                if (event.message.isPrivate) {
+                    channelConsumer(event.message.channel);
                 } else {
-                    e.message.author.openDM().then(channelConsumer);
+                    event.message.author.openDM().then(channelConsumer);
                 }
+            }
+        },
+        {
+            name: 'status',
+            callback: function(event, bot) {
+                bot.hasPermission(event.message.author, 'status_set').then(hasPermission => {
+                    if (hasPermission) {
+                        var status = event.internal.text.substr('status'.length).trim();
+                        bot.setStatus(StatusTypes.ONLINE, {
+                            name: status
+                        });
+                        fs.writeFile('cfg/status.txt', status, 'utf8', function(error, data) {
+                            if (error) {
+                                console.log(error.stack ? error.stack : error);
+                            }
+                        });
+                    }
+                });
             }
         }
     ]
