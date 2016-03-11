@@ -3,12 +3,14 @@
 const Events = require('discordie').Events;
 
 function saveUser(bot, user) {
-    bot.database.query('INSERT INTO `users` (`id`) VALUES (?) ON DUPLICATE KEY UPDATE `last_seen` = NOW()',
-        [user.id], function(error, results, fields) {
-            if (error) {
-                console.log(error);
-            }
-        });
+    if (user.id) {
+        bot.database.query('INSERT INTO `users` (`id`) VALUES (?) ON DUPLICATE KEY UPDATE `last_seen` = NOW()',
+            [user.id], function (error, results, fields) {
+                if (error) {
+                    console.log(error.stack ? error.stack : error);
+                }
+            });
+    }
 }
 
 function saveGuild(bot, guild) {
