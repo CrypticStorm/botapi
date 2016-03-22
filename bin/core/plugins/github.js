@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const os = require('os');
-const Utils = require('../utils');
+const Plugin = require('../../plugin/plugin');
 
 function load_config(bot, file) {
     bot.config.github_json = JSON.parse(fs.readFileSync(file, 'utf-8'));
@@ -14,10 +14,12 @@ function load_config(bot, file) {
     bot.config.github_json.channels = channels;
 }
 
-const Plugin = {
-    name: 'Core-Github',
-    version: '1.0.0',
-    enable: function() {
+class Github extends Plugin {
+    constructor(manager) {
+        super(manager, 'Core-Github', '1.0.0');
+    }
+
+    enable() {
         load_config(this.manager.bot, 'cfg/github.json');
         this.router.post('/github/bot', function (req, res) {
             if (req.headers['x-github-event'] == 'push') {
@@ -40,6 +42,6 @@ const Plugin = {
             res.status(200).end();
         }.bind(this));
     }
-};
+}
 
-module.exports = Plugin;
+module.exports = Github;

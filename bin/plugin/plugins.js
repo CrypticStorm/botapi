@@ -20,6 +20,7 @@ class Plugins {
         this._loadCorePlugins();
         this._coremode = false;
         this._loadPlugins();
+        delete this._coremode;
     }
 
     _loadCorePlugins() {
@@ -76,58 +77,71 @@ class Plugins {
     }
 
     get plugins() {
-        return Object.keys(this._plugins).sort().map(function(key) {return this._plugins[key]}.bind(this));
+        return Object.keys(this._plugins).sort().map(key => this._plugins[key]);
     }
 
     get active() {
-        return this.plugins.filter(function(plugin) {return plugin.enabled});
+        return this.plugins.filter(plugin => plugin.enabled);
     }
 
-    add(name, enable, lock) {
+    add(name, enable) {
         if (typeof enable === 'undefined') {
             enable = true;
         }
         var path = Path.normalize((this._coremode ? this._coredirectory : this._directory) + '/' + name);
-        var plugin = new Plugin(this, path, lock && this._coremode);
-        if (!this._plugins.hasOwnProperty(plugin.name)) {
-            this._plugins[plugin.name] = plugin;
-            plugin.load(this);
-            if (enable) {
-                this.enable(plugin);
-            }
+        var pluginClass = require(path);
+        var plugin = pluginClass(this);
+
+        this._plugins[plugin.name] = plugin;
+        this.load(plugin);
+        if (enable) {
+            this.enable(plugin);
         }
     }
 
     remove(name) {
         var plugin = this._plugins[name];
-        if (plugin && !plugin.locked) {
-            plugin.disable(this);
-            plugin.unload(this);
-            delete this._plugins[name];
+        if (plugin) {
+            this.disable(plugin);
+            this.unload(plugin);
         }
     }
 
     enableAll() {
         for (var i in this._plugins) {
-            if (this._plugins.hasOwnProperty(i)) {
-                this.enable(this._plugins[i]);
-            }
+            this.enable(this._plugins[i]);
         }
     }
 
     disableAll() {
         for (var i in this._plugins) {
-            if (this._plugins.hasOwnProperty(i)) {
-                this.disable(this._plugins[i]);
-            }
+            this.disable(this._plugins[i]);
         }
     }
 
     removeAll() {
         for (var i in this._plugins) {
-            if (this._plugins.hasOwnProperty(i)) {
-                this.remove(this._plugins[i]);
+            this.remove(this._plugins[i]);
+        }
+    }
+
+    load(name) {
+        var plugin = name;
+        if (typeof name === 'string') {
+            plugin = this._plugins[name]
+        }
+
+        if (plugin && !plugin.loaded) {
+            if (plugin.load) {
+                plugin.load();
             }
+
+            this._plugins[plugin.name] = plugin;
+            console.log('Loaded Plugin: ' + plugin.name);
+
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -136,22 +150,27 @@ class Plugins {
         if (typeof name === 'string') {
             plugin = this._plugins[name]
         }
-        if (plugin) {
-            if (plugin.enable(this)) {
-                var commands = plugin.commands;
-                for (var i in commands) {
-                    if (commands.hasOwnProperty(i)) {
-                        this._bot.addCommand(plugin, commands[i]);
-                    }
-                }
-                var responses = plugin.responses;
-                for (var i in responses) {
-                    if (responses.hasOwnProperty(i)) {
-                        this._bot.addResponse(plugin, responses[i]);
-                    }
-                }
-                console.log('Enabled Plugin: ' + plugin.name)
+
+        if (plugin && plugin.loaded && !plugin.enabled) {
+            var self = this;
+
+            if (plugin.enable) {
+                plugin.enable();
             }
+
+            if (plugin.commands) {
+                plugin.commands.forEach(cmd => self._bot.addCommand(plugin, cmd));
+            }
+
+            if (plugin.responses) {
+                plugin.responses.forEach(cmd => self._bot.addResponse(plugin, cmd));
+            }
+
+            console.log('Enabled Plugin: ' + plugin.name);
+
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -160,22 +179,51 @@ class Plugins {
         if (typeof name === 'string') {
             plugin = this._plugins[name]
         }
-        if (plugin && !plugin.locked) {
-            if (plugin.disable(this)) {
-                this._bot.commands.disable(plugin);
-                this._bot.responses.disable(plugin);
-                this.removeRouters(plugin);
-                console.log('Disabled Plugin: ' + plugin.name)
+
+        if (plugin && plugin.loaded && plugin.enabled) {
+            if (plugin.disable) {
+                plugin.disable();
             }
+
+            this._bot.commands.disable(plugin);
+            this._bot.responses.disable(plugin);
+            this.removeRouters(plugin);
+
+            console.log('Disabled Plugin: ' + plugin.name);
+
+            return true;
+        } else {
+            return false;
         }
     }
 
-    reload(name, unsafe) {
+    unload(name) {
         var plugin = name;
         if (typeof name === 'string') {
             plugin = this._plugins[name]
         }
-        if (plugin && (unsafe || !plugin.locked)) {
+
+        if (plugin && plugin.loaded) {
+            if (plugin.unload) {
+                plugin.unload();
+            }
+
+            delete this._plugins[plugin.name];
+            console.log('Unloaded Plugin: ' + plugin.name);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    reload(name) {
+        var plugin = name;
+        if (typeof name === 'string') {
+            plugin = this._plugins[name]
+        }
+
+        if (plugin) {
             var enabled = plugin.enabled;
             this.remove(name);
             this.add(name, enabled);

@@ -1,10 +1,10 @@
 "use strict";
 
 var Utils = {
-    escapeRegExp: function(str) {
+    escapeRegExp(str) {
         return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     },
-    compareVersion: function(ver1, ver2) {
+    compareVersion(ver1, ver2) {
         var ver1a = var1.split('.');
         var ver2a = var2.split('.');
 

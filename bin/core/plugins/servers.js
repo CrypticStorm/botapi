@@ -1,9 +1,13 @@
 "use strict";
 
-var Plugin = {
-    name: 'Core-Servers',
-    version: '1.0.0',
-    commands: [
+const Plugin = require('../../plugin/plugin');
+
+class Servers extends Plugin {
+    constructor(manager) {
+        super(manager, 'Core-Servers', '1.0.0');
+    }
+
+    commands = [
         {
             name: 'join',
             permission: 'cmd_join',
@@ -23,6 +27,6 @@ var Plugin = {
             }
         }
     ]
-};
+}
 
-module.exports = Plugin;
+module.exports = Servers;

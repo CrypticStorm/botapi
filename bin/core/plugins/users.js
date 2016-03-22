@@ -1,6 +1,7 @@
 "use strict";
 
 const Events = require('discordie').Events;
+const Plugin = require('../../plugin/plugin');
 
 function saveUser(bot, user) {
     if (user.id) {
@@ -23,18 +24,21 @@ function onLogout(bot, event) {
     }
 }
 
-var Plugin = {
-    name: 'Core-Users',
-    version: '1.0.0',
-    enable: function() {
+class Users extends Plugin {
+    constructor(manager) {
+        super(manager, 'Core-Users', '1.0.0');
+    }
+
+    enable() {
         this.manager.bot.addDispatch(Events.PRESENCE_UPDATE, onLogout.bind(this, this.manager.bot));
         this.manager.bot.addDispatch(Events.GUILD_MEMBER_ADD, saveUser.bind(this, this.manager.bot));
         this.manager.bot.addDispatch(Events.GUILD_MEMBER_REMOVE, saveUser.bind(this, this.manager.bot));
         this.manager.bot.Users.forEach(member => saveUser(this.manager.bot, member));
-    },
-    disable: function() {
+    }
+
+    disable() {
         this.manager.bot.Users.forEach(member => saveUser(this.manager.bot, member));
     }
-};
+}
 
 module.exports = Plugin;

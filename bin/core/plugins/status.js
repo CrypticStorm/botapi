@@ -3,10 +3,14 @@
 const Discordie = require('discordie');
 const StatusTypes = Discordie.StatusTypes;
 const fs = require('fs');
+const Plugin = require('../../plugin/plugin');
 
-var Plugin = {
-    name: 'Core-Status',
-    enable: function() {
+class Status extends Plugin {
+    constructor(manager) {
+        super(manager, 'Core-Status', '1.0.0');
+    }
+
+    enable() {
         const bot = this.manager.bot;
         fs.readFile('cfg/status.txt', 'utf8', function(error, data) {
             if (error) {
@@ -17,8 +21,9 @@ var Plugin = {
                 name: data
             });
         });
-    },
-    commands: [
+    }
+
+    commands = [
         {
             name: 'baka',
             callback: function (event, bot) {
@@ -37,10 +42,14 @@ var Plugin = {
                             case 'reload':
                                 if (args.length > 2) {
                                     bot.hasPermission(event.message.author, "plugin_reload").then(function(hasPermission) {
-                                        if (bot.plugins.reload(args[2], hasPermission)) {
-                                            event.message.channel.sendMessage('Plugin reloaded');
+                                        if (hasPermission) {
+                                            if (bot.plugins.reload(args[2])) {
+                                                event.message.channel.sendMessage('Plugin reloaded.');
+                                            } else {
+                                                event.message.channel.sendMessage('Plugin not found.');
+                                            }
                                         } else {
-                                            event.message.channel.sendMessage('Plugin not found / No permission to reload');
+                                            event.message.channel.sendMessage('No permission to reload.');
                                         }
                                     });
                                 } else {
@@ -59,9 +68,9 @@ var Plugin = {
                             }
                             first = false;
 
-                            if (plugins[i].locked) {
-                                message += '**';
-                            }
+                            //if (plugins[i].locked) {
+                            //    message += '**';
+                            //}
                             if (!plugins[i].enabled) {
                                 message += '_';
                             }
@@ -71,9 +80,9 @@ var Plugin = {
                             if (!plugins[i].enabled) {
                                 message += '_';
                             }
-                            if (plugins[i].locked) {
-                                message += '**';
-                            }
+                            //if (plugins[i].locked) {
+                            //    message += '**';
+                            //}
                         }
                     }
                     channel.sendMessage(message);
@@ -137,6 +146,6 @@ var Plugin = {
             }
         }
     ]
-};
+}
 
-module.exports = Plugin;
+module.exports = Status;
