@@ -1,0 +1,36 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    h1= user.username
+        small= "#" + user.discriminator
+    hr
+    .row
+        .col-sm-3
+            img.img-responsive.img-rounded(src=user.avatar)
+        .col-sm-9
+            ul#tabs.nav.nav-tabs(role="tablist")
+                li.active(role="presentation")
+                    a(href="#general", aria-controls="#general", role="tab", data-toggle="tab") General
+                li(role="presentation")
+                    a(href="#servers", aria-controls="#servers", role="tab", data-toggle="tab") Servers
+                li(role="presentation")
+                    a(href="#stats", aria-controls="#stats", role="tab", data-toggle="tab") Stats
+            .tab-content
+                #general.tab-pane.active(role="tabpanel")
+                    .row
+                        dl.dl-horizontal
+                            dt Username
+                            dd= user.username
+                        dl.dl-horizontal
+                            dt Discriminator
+                            dd= user.discriminator
+                        dl.dl-horizontal
+                            dt Avatar URL
+                            dd= user.avatar
+                #servers.tab-pane(role="tabpanel")
+                    p Servers
+                #stats.tab-pane(role="tabpanel")
+                    p Stats

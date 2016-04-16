@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require('express');
+const session = require('express-session');
 const path = require('path');
 const favicon = require('serve-favicon');
 const logger = require('morgan');
@@ -23,9 +24,11 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({secret: 'B49hdWxB$!D!wgXA5t99L#q5KVbkk2Gh'})); //Please change this
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist/'));
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist/'));
 
-app.bot = new bot(app);
 /*
 app.use('/', routes);
 app.use('/commands', commands);
@@ -63,4 +66,7 @@ if (app.get('env') === 'development') {
     });
 }
 */
+
+app.bot = new bot(app);
+
 module.exports = app;

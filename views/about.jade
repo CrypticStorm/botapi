@@ -1,0 +1,21 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    .panel.panel-primary
+        .panel-heading
+            .panel-title What
+        .panel-body
+            | BotAPI is a plugin based discord toolkit that allows server owners to
+            | manager the features of many different systems without the hassle of
+            | multiple bots. Common plugins include moderation logging, game /
+            | game provider information, and a self-managed tournament system.
+    .panel.panel-primary
+        .panel-heading
+            .panel-title Who
+        .panel-body
+            | BotAPI is currently designed solely by Robert Carmosino (API).
+            | Up to date public code is avaiable on
+            a(href=github) GitHub

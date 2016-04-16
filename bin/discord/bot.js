@@ -1,8 +1,11 @@
 "use strict";
 
 const Discordie = require('discordie');
+const Promise = require('promise');
 const Login = require('./login');
+const MySQL = require('./mysql');
 const Commands = require('../cmd/commands');
+const Conversations = require('../conversation/conversations');
 const Plugins = require('../plugin/plugins');
 const fs = require('fs');
 const os = require('os');
@@ -10,7 +13,8 @@ const os = require('os');
 const Events = Discordie.Events;
 
 const defaultOptions = {
-    login: new Login()
+    login: new Login(),
+    mysql: MySQL("cfg/mysql-discord.json")
 };
 
 class Bot {
@@ -21,40 +25,31 @@ class Bot {
         this._app = app;
 
         this._bot = new Discordie();
-        this._bot.connect(options.login, false);
+        this._bot.connect(options.login);
 
         this._config = {};
+        this._database = options.mysql;
+
+        this._conversations = new Conversations(this);
 
         this._commands = new Commands(false, true);
         this._responses = new Commands(true, false);
 
         this._plugins = new Plugins(this, app);
 
-        this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, function(e){
-            fs.writeFile('cfg/token.txt', this._bot.token, function() {
-                console.log('Wrote login token to disk.');
+        this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, () => {
+            fs.writeFile('cfg/token.txt', this._bot.token, () => {
+                if (!options.login.token) {
+                    console.log('[Login] Wrote login token to disk.');
+                }
             });
-            console.log("Connected as: " + this._bot.User.username);
+            console.log("[Login] Connected as: " + this._bot.User.username);
 
             this._plugins.enableAll();
-        }.bind(this));
+        });
 
-        this._bot.Dispatcher.on(Events.MESSAGE_CREATE, this._commands.executor.bind(this._commands, this));
-        this._bot.Dispatcher.on(Events.MESSAGE_CREATE, this._responses.executor.bind(this._responses, this));
-
-        this._config.admins = [];
-        var admin_lines = fs.readFileSync('cfg/admins.txt', 'utf-8').split(os.EOL);
-        for (var i = 0; i < admin_lines.length; i++) {
-            this._config.admins.push(admin_lines[i]);
-        }
-        console.log('Loaded ' + admin_lines.length + ' admins.');
-
-        this._config.nomention = [];
-        var nomention_lines = fs.readFileSync('cfg/nomention.txt', 'utf-8').split(os.EOL);
-        for (var i = 0; i < nomention_lines.length; i++) {
-            this._config.nomention.push(nomention_lines[i]);
-        }
-        console.log('Loaded ' + nomention_lines.length + ' nomention users.');
+        this.addDispatch(Events.MESSAGE_CREATE, this._commands.executor.bind(this._commands, this));
+        this.addDispatch(Events.MESSAGE_CREATE, this._responses.executor.bind(this._responses, this));
 
         process.on('SIGINT', function() {
             console.log('Shutting down');
@@ -63,16 +58,20 @@ class Bot {
         }.bind(this));
     }
 
-    get app() {
-        return this._app;
-    }
-
     get config() {
         return this._config;
     }
 
+    get database() {
+        return this._database;
+    }
+
     get client() {
         return this._bot;
+    }
+
+    get conversations() {
+        return this._conversations;
     }
 
     get plugins() {
@@ -87,26 +86,28 @@ class Bot {
         return this._responses;
     }
 
-    isAdmin(user) {
-        if (typeof user === 'number') {
-            return ~this._config.admins.indexOf(user);
-        } else if (user.hasOwnProperty('id')) {
-            return ~this._config.admins.indexOf(user.id);
+    hasPermission(user, permission) {
+        if (user.id) {
+            user = user.id;
+        }
+        if (permission.length > 0) {
+            return new Promise((fulfill, reject) => {
+                this._database.query('SELECT `granted` FROM `user_perms` WHERE `user_id` = ? AND `perm_id` = ?;',
+                    [user, permission], function (error, results, fields) {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            fulfill(results.length > 0);
+                        }
+                    })
+            });
         } else {
-            return 0;
+            return Promise.resolve(true);
         }
     }
 
-    noMention(user) {
-        if (this.isAdmin(user)) {
-            return true;
-        } else if (typeof user === 'number') {
-            return ~this._config.nomention.indexOf(user);
-        } else if (user.hasOwnProperty('id')) {
-            return ~this._config.nomention.indexOf(user.id);
-        } else {
-            return 0;
-        }
+    getTagged(tag) {
+
     }
 
     addCommand(plugin, cmd_options) {
@@ -115,6 +116,42 @@ class Bot {
 
     addResponse(plugin, cmd_options) {
         this._responses.add(plugin, cmd_options);
+    }
+
+    addDispatch(event, func) {
+        this._bot.Dispatcher.on(event, func);
+    }
+
+    setStatus(status, game) {
+        this._bot.User.setStatus(status, game);
+    }
+
+    get Guilds() {
+        return this._bot.Guilds;
+    }
+
+    get Channels() {
+        return this._bot.Channels;
+    }
+
+    get Users() {
+        return this._bot.Users;
+    }
+
+    get DirectMessageChannels() {
+        return this._bot.DirectMessageChannels;
+    }
+
+    get Messages() {
+        return this._bot.Messages;
+    }
+
+    get Invites() {
+        return this._bot.Invites;
+    }
+
+    get VoiceConnections() {
+        return this._bot.VoiceConnections;
     }
 }
 

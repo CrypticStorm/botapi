@@ -1,0 +1,11 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    .jumbotron
+        h1= title
+        p The ultimate modular bot experience.
+        p
+            a.btn.btn-primary.btn-lg(href="/about", role="button") Learn more
