@@ -9,9 +9,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const bot = require('./bin/discord/bot');
 
-const routes = require('./routes/index');
-const commands = require('./routes/commands');
-
 const app = express();
 app.bot = new bot(app);
 
