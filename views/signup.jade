@@ -1,0 +1,24 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    .col-sm-6.col-sm-offset-3
+        h1
+            span.glyphicon.glyphicon-log-in
+            | Login
+        form(action="/login" method="post")
+            .form-group
+                label Email
+                input.form-control(type="text", name="email")
+            .form-group
+                label Password
+                input.form-control(type="password", name="password")
+            button.btn.btn-warning.btn-lg(type="submit") Login
+        hr
+        p Already have an account?
+            a(href="/login") Login
+        p Or return
+            a(href="/") home
+            | .

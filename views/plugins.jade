@@ -1,0 +1,39 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    .panel.panel-primary
+        .panel-heading
+            .panel-title Plugins
+        .panel-body
+            p
+                | Plugins are the core of #{title} and allow for all of the simple and
+                | complex functionality that the bot can provide.
+            p
+                | The following plugins
+                | are all currently being run on at least 1 server.
+        table.table
+            thead
+                tr
+                    th Name
+                    th Version
+            tfoot
+                tr
+                    td Total Plugins:
+                    td= plugins.length
+            tbody
+                each plugin in plugins
+                    if plugin.enabled
+                        tr.success
+                            td= plugin.name
+                            td= plugin.version
+                    else if plugin.loaded
+                        tr.warning
+                            td= plugin.name
+                            td= plugin.version
+                    else
+                        tr.danger
+                            td= plugin.name
+                            td= plugin.version

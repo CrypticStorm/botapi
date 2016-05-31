@@ -3,23 +3,29 @@
 const Command = require('./command');
 
 var tag_command = function(bot, event) {
-    if (event.message.author.id == bot.client.User.id) {
+    if (event.message.author.id == bot.client.User.id || event.message.author.bot) {
         return;
     }
     var text;
     if (event.message.content.startsWith(bot.client.User.mention)) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
+    } else if (event.message.content.startsWith('::')) {
+        text = event.message.content.substring('::'.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
     } else {
         return;
     }
-    event.internal = {text: text};
-    var cmd = this.get(text.split(' ')[0]);
+    var args = text.match(/[^"\s]+|"(?:\\"|[^"])+"/g);
+    if (args == null) {
+        args = [];
+    }
+    args = args.map(arg => arg.startsWith('"') && arg.endsWith('"') ? arg.substring(1, arg.length - 1) : arg).map(arg => arg.replace(/\\"/g, '"'));
+    var cmd = this.get(args[0]);
     if (cmd) {
         bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
             if (hasPermission) {
-                cmd.callback(event, bot);
+                cmd.callback(event, bot, text, args);
             } else {
                 event.message.reply('ばか！管理者じゃないです。');
             }
@@ -34,45 +40,28 @@ var regex_commands = function(bot, event) {
     var text;
     if (event.message.content.startsWith(bot.client.User.mention)) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
+    } else if (event.message.content.startsWith('::')) {
+        text = event.message.content.substring('::'.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
     } else {
         return;
     }
     event.internal = {text: text};
-    for (var cmd_regex in this._commands) {
-        if (this._commands.hasOwnProperty(cmd_regex)) {
-            if (text.match(cmd_regex)) {
-                var cmd = this.get(cmd_regex);
-                if (cmd) {
-                    bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
-                        if (hasPermission) {
-                            cmd.callback(event, bot);
-                        } else {
-                            event.message.reply('ばか！管理者じゃないです。');
-                        }
-                    });
-                    return;
-                }
-            }
-        }
+    var args = text.split(/\s/g);
+    var cmd_name = Object.keys(this._commands).find(cmd_regex => text.match(cmd_regex));
+    if (!cmd_name) {
+        cmd_name = Object.keys(this._aliascommands).find(cmd_regex => text.match(cmd_regex));
     }
-    for (var alias_regex in this._aliascommands) {
-        if (this._aliascommands.hasOwnProperty(alias_regex)) {
-            if (text.match(alias_regex)) {
-                var alias_cmd = this.get(alias_regex);
-                if (alias_cmd) {
-                    bot.hasPermission(event.message.author, alias_cmd.permission).then(function(hasPermission) {
-                        if (hasPermission) {
-                            alias_cmd.callback(event, bot);
-                        } else {
-                            event.message.reply('ばか！管理者じゃないです。');
-                        }
-                    });
-                    return;
-                }
+    if (cmd_name) {
+        var cmd = this._commands[cmd_name];
+        bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
+            if (hasPermission) {
+                cmd.callback(event, bot, text, args);
+            } else {
+                event.message.reply('ばか！管理者じゃないです。');
             }
-        }
+        });
     }
 };
 
@@ -94,7 +83,7 @@ class Commands {
             }
         }
         if (this._print_new) {
-            console.log('Added command: ' + cmd.name);
+            console.log('[Commands] Added: ' + cmd.name);
         }
     };
 

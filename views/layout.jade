@@ -1,10 +1,12 @@
 doctype html
 html
-  head
-    title= title
-    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block header
-    block content
-    block footer
+    head
+        title= title
+        link(rel='stylesheet', href='/bootstrap/css/bootstrap.min.css')
+        script(src='/jquery/jquery.js')
+        script(src='/bootstrap/js/bootstrap.min.js')
+    body
+        .container
+            block header
+            block content
+            block footer

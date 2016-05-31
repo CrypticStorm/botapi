@@ -12,9 +12,11 @@ class Command {
         }
         this._plugin = plugin;
         this._name = !regex || options.isEscaped ? options.name : '^' + Utils.escapeRegExp(options.name) + '$';
-        this._aliases = !regex || options.isEscaped ? options.aliases : options.aliases.map(function(alias) {return '^' + Utils.escapeRegExp(alias) + '$'});
-        this._permission = (typeof options.permission === 'undefined') ? '' : options.permission;
+        this._aliases = !regex || options.isEscaped ? options.aliases : options.aliases.map((alias) => '^' + Utils.escapeRegExp(alias) + '$');
+        this._permission = options.permission ? options.permission : '';
         this._help = options.help ? options.help : "";
+        this._parser = options.parser ? typeof options.parser == 'function' ? options.parser() : options.parser : null;
+        this._data = options.data ? options.data : {};
         this._callback = options.callback ? options.callback : function(){}
     }
 
@@ -36,6 +38,14 @@ class Command {
 
     get help() {
         return this._help;
+    }
+
+    get parser() {
+        return this._parser;
+    }
+
+    get data() {
+        return this._data;
     }
 
     get callback() {

@@ -1,0 +1,39 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    h1= user.username
+        small= "#" + user.discriminator
+    hr
+    .row
+        .col-sm-2
+            img.img-responsive.img-rounded(src=user.avatar)
+        .col-sm-10
+            ul#tabs.nav.nav-tabs(role="tablist")
+                li.active(role="presentation")
+                    a(href="#general", aria-controls="#general", role="tab", data-toggle="tab") General
+                li(role="presentation")
+                    a(href="#servers", aria-controls="#servers", role="tab", data-toggle="tab") Servers
+                li(role="presentation")
+                    a(href="#stats", aria-controls="#stats", role="tab", data-toggle="tab") Stats
+            .tab-content
+                #general.tab-pane.active(role="tabpanel")
+                    .row
+                        dl.dl-horizontal
+                            dt Username
+                            dd= user.username
+                        dl.dl-horizontal
+                            dt Discriminator
+                            dd= user.discriminator
+                #servers.tab-pane(role="tabpanel")
+                    .btn-group
+                        button.btn.btn-default.btn-lg.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true" aria-expanded="false") Servers
+                        ul.dropdown-menu
+                            each server in user.guilds
+                                li
+                                    a(href="http://botapi.xyz/server/#{server.id}")= server.name
+
+                #stats.tab-pane(role="tabpanel")
+                    p Stats

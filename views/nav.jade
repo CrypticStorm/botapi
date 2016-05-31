@@ -1,10 +1,49 @@
-nav.navbar.navbar-default
-  .container-fluid
+nav.navbar.navbar-inverse
     .collapse.navbar-collapse
-      ul.nav.navbar-nav
-        li
-          a(href="/") Home
-        li
-          a(href="/about") About
-        li
-          a(href="/commands") Commands
+        ul.nav.navbar-nav.navbar-left
+            li
+                a(href="/")
+                    span.glyphicon.glyphicon-home(aria-hidden=true)
+                    |  Home
+            li
+                a(href="/about")
+                    span.glyphicon.glyphicon-option-horizontal(aria-hidden=true)
+                    |  About
+            li
+                a(href="/plugins")
+                    span.glyphicon.glyphicon-stats(aria-hidden=true)
+                    |  Plugins
+            li
+                a(href="/tournaments")
+                    span.glyphicon.glyphicon-tower(aria-hidden=true)
+                    |  Tournaments
+
+        ul.nav.navbar-nav.navbar-right
+            li
+                a(href="/join", data-toggle="tooltip", data-placement="top", title="Join our development server")
+                    span.glyphicon.glyphicon-globe(aria-hidden=true)
+                    |  Develop
+            li
+                a(href="/invite", data-toggle="tooltip", data-placement="top", title="Summon BotAPI to your server")
+                    span.glyphicon.glyphicon-wrench(aria-hidden=true)
+                    |  Summon
+            if user
+                li.dropdown
+                    a.dropdown-toggle(href="#", data-toggle="dropdown", role="button", aria-haspopup="true", aria-expanded="false")
+                        span.glyphicon.glyphicon-user(aria-hidden=true)
+                        |  #{user.username}##{user.discriminator}
+                    ul.dropdown-menu
+                        li
+                            a(href="/profile")
+                                span.glyphicon.glyphicon-user(aria-hidden=true)
+                                |  Profile
+                        li
+                            a(href="/logout")
+                                span.glyphicon.glyphicon-log-out(aria-hidden=true)
+                                |  Logout
+
+            else
+                li
+                    a(href="/login")
+                        span.glyphicon.glyphicon-log-in(aria-hidden=true)
+                        |  Login
