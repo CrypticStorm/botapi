@@ -14,8 +14,8 @@ const discordOAuthIdentify = new ClientOAuth2({
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
     accessTokenUri: API_BASE_URL + '/oauth2/token',
     authorizationUri: API_BASE_URL + '/oauth2/authorize',
-    redirectUri: 'http://localhost:3000/oauth2/callback',
-    scopes: ['identify']
+    redirectUri: 'http://botapi.xyz/oauth2/callback',
+    scopes: ['identify', 'guilds']
 });
 
 const discordOAuthJoin = new ClientOAuth2({
@@ -23,7 +23,7 @@ const discordOAuthJoin = new ClientOAuth2({
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
     accessTokenUri: API_BASE_URL + '/oauth2/token',
     authorizationUri: API_BASE_URL + '/oauth2/authorize',
-    redirectUri: 'http://localhost:3000/oauth2/callback',
+    redirectUri: 'http://botapi.xyz/oauth2/callback',
     scopes: ['guilds.join']
 });
 
@@ -49,6 +49,26 @@ var Web = {
             res.redirect(uri);
         });
 
+        this.router.get('/logout', (req, res) => {
+            delete req.session.user;
+            res.redirect('/');
+        });
+
+        this.router.get('/server/:id', this.isLoggedIn, (req, res) => {
+            var data = {
+                user: req.session.user
+            };
+            if (req.session.user && req.session.user.guilds) {
+                var guild = req.session.user.guilds.find(guild => guild.id == req.params.id);
+                guild.avatar = Constants.API_ENDPOINT + Endpoints.GUILD_ICON(guild.id, guild.icon);
+                if (guild != null) {
+                    data.guild = guild;
+                    data.permissions = new IPermissions(guild.permissions, Constants.PermissionSpecs.Role);
+                }
+            }
+            res.render('server', data);
+        });
+
         this.router.get('/profile', this.isLoggedIn, (req, res) => {
             res.render('profile', {user: req.session.user});
         });
@@ -58,7 +78,7 @@ var Web = {
         });
 
         this.router.get('/invite', (req, res) => {
-            var uri = 'https://discordapp.com/oauth2/authorize?client_id='+process.env.DISCORD_BOT_ID+'&scope=bot&permissions='+IPermissions.ALL+'&redirect_uri='+'http://localhost:3000';
+            var uri = 'https://discordapp.com/oauth2/authorize?client_id='+process.env.DISCORD_CLIENT_ID+'&scope=bot&permissions='+IPermissions.ALL+'&redirect_uri='+'http://botapi.xyz/';
             res.redirect(uri);
         });
 
@@ -73,14 +93,45 @@ var Web = {
                     } else {
                         try {
                             var json = JSON.parse(body);
-                            json.avatar = Constants.CDN_ENDPOINT + Endpoints.CDN_AVATAR(json.id, json.avatar);
+                            console.log('[Login] Logged In:' + json.username + '#' + json.discriminator);
                             this.manager.get('Core-Users').saveUser(this.manager.bot, json);
+                            json.avatar = Constants.CDN_ENDPOINT + Endpoints.CDN_AVATAR(json.id, json.avatar);
 
                             if (!req.session) {
                                 req.session = {};
                             }
                             req.session.user = json;
-                            res.redirect('/');
+
+                            Request.get(token.sign({
+                                method: 'GET',
+                                url: API_BASE_URL + '/users/@me/guilds'
+                            }), (err, response, body) => {
+                                if (err) {
+                                    console.log(err.stack);
+                                } else {
+                                    try {
+                                        var json = JSON.parse(body);
+                                        if (!json.hasOwnProperty('message')) {
+                                            json.sort((g1, g2) => g1.name.localeCompare(g2.name));
+
+                                            if (!req.session) {
+                                                req.session = {};
+                                            }
+                                            req.session.user.guilds = json;
+                                        }
+
+                                        var redirect_uri = req.session.login_redirect;
+                                        if (redirect_uri) {
+                                            delete req.session.login_redirect;
+                                            res.redirect(redirect_uri);
+                                        } else {
+                                            res.redirect('/');
+                                        }
+                                    } catch(e) {
+                                        console.log(e.stack);
+                                    }
+                                }
+                            });
                         } catch(e) {
                             console.log(e.stack);
                         }

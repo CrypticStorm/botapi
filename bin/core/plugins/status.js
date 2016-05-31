@@ -23,9 +23,11 @@ var Status = {
 
     commands: [
         {
-            name: 'baka',
+            name: 'memory',
             callback: function (event, bot, text, args) {
-                event.message.reply('ばか！');
+                var mem = process.memoryUsage();
+                event.message.reply((mem.heapUsed / Math.pow(1024.0, 2)).toFixed(2) + 'Mb / '
+                    + (mem.heapTotal / Math.pow(1024.0, 2)).toFixed(2) + 'Mb');
             }
         },
         {

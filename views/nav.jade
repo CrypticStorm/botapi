@@ -11,8 +11,13 @@ nav.navbar.navbar-inverse
                     |  About
             li
                 a(href="/plugins")
-                    span.glyphicon.glyphicon-search(aria-hidden=true)
+                    span.glyphicon.glyphicon-stats(aria-hidden=true)
                     |  Plugins
+            li
+                a(href="/tournaments")
+                    span.glyphicon.glyphicon-tower(aria-hidden=true)
+                    |  Tournaments
+
         ul.nav.navbar-nav.navbar-right
             li
                 a(href="/join", data-toggle="tooltip", data-placement="top", title="Join our development server")
@@ -23,10 +28,20 @@ nav.navbar.navbar-inverse
                     span.glyphicon.glyphicon-wrench(aria-hidden=true)
                     |  Summon
             if user
-                li
-                    a(href="/profile")
+                li.dropdown
+                    a.dropdown-toggle(href="#", data-toggle="dropdown", role="button", aria-haspopup="true", aria-expanded="false")
                         span.glyphicon.glyphicon-user(aria-hidden=true)
                         |  #{user.username}##{user.discriminator}
+                    ul.dropdown-menu
+                        li
+                            a(href="/profile")
+                                span.glyphicon.glyphicon-user(aria-hidden=true)
+                                |  Profile
+                        li
+                            a(href="/logout")
+                                span.glyphicon.glyphicon-log-out(aria-hidden=true)
+                                |  Logout
+
             else
                 li
                     a(href="/login")

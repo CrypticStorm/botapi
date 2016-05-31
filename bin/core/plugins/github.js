@@ -6,11 +6,7 @@ const os = require('os');
 function load_config(bot, file) {
     bot.config.github_json = JSON.parse(fs.readFileSync(file, 'utf-8'));
     var channel_ids = bot.config.github_json.channels;
-    var channels = [];
-    for (var i = 0; i < channel_ids.length; i++) {
-        channels.push(bot.Channels.get(channel_ids[i]));
-    }
-    bot.config.github_json.channels = channels;
+    bot.config.github_json.channels = channel_ids.map(channel_id => bot.Channels.get(channel_id)).filter(channel => channel != null);
 }
 
 var Github = {

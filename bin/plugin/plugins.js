@@ -139,15 +139,20 @@ class Plugins {
         }
 
         if (plugin && !plugin.loaded) {
-            if (plugin.load) {
-                plugin.load();
+            try {
+                if (plugin.load) {
+                    plugin.load();
+                }
+
+                plugin.loaded = true;
+                this._plugins[plugin.name] = plugin;
+                console.log('[Plugins] Loaded: ' + plugin.name);
+
+                return true;
+            } catch (e) {
+                console.error('Error loading "' + plugin.name + '"' + e.stack ? e.stack : e);
+                return false;
             }
-
-            plugin.loaded = true;
-            this._plugins[plugin.name] = plugin;
-            console.log('[Plugins] Loaded: ' + plugin.name);
-
-            return true;
         } else {
             return false;
         }
@@ -160,24 +165,29 @@ class Plugins {
         }
 
         if (plugin && plugin.loaded && !plugin.enabled) {
-            var self = this;
+            try {
+                var self = this;
 
-            if (plugin.enable) {
-                plugin.enable();
+                if (plugin.enable) {
+                    plugin.enable();
+                }
+
+                if (plugin.commands) {
+                    plugin.commands.forEach(cmd => self._bot.addCommand(plugin, cmd));
+                }
+
+                if (plugin.responses) {
+                    plugin.responses.forEach(cmd => self._bot.addResponse(plugin, cmd));
+                }
+
+                plugin.enabled = true;
+                console.log('[Plugins] Enabled: ' + plugin.name);
+
+                return true;
+            } catch (e) {
+                console.error('Error enabling "' + plugin.name + '"' + e.stack ? e.stack : e);
+                return false;
             }
-
-            if (plugin.commands) {
-                plugin.commands.forEach(cmd => self._bot.addCommand(plugin, cmd));
-            }
-
-            if (plugin.responses) {
-                plugin.responses.forEach(cmd => self._bot.addResponse(plugin, cmd));
-            }
-
-            plugin.enabled = true;
-            console.log('[Plugins] Enabled: ' + plugin.name);
-
-            return true;
         } else {
             return false;
         }
@@ -190,18 +200,23 @@ class Plugins {
         }
 
         if (plugin && plugin.loaded && plugin.enabled) {
-            if (plugin.disable) {
-                plugin.disable();
+            try {
+                if (plugin.disable) {
+                    plugin.disable();
+                }
+
+                this._bot.commands.disable(plugin);
+                this._bot.responses.disable(plugin);
+                this.removeRouters(plugin);
+
+                plugin.enabled = false;
+                console.log('[Plugins] Disabled: ' + plugin.name);
+
+                return true;
+            } catch (e) {
+                console.error('Error disabling "' + plugin.name + '"' + e.stack ? e.stack : e);
+                return false;
             }
-
-            this._bot.commands.disable(plugin);
-            this._bot.responses.disable(plugin);
-            this.removeRouters(plugin);
-
-            plugin.enabled = false;
-            console.log('[Plugins] Disabled: ' + plugin.name);
-
-            return true;
         } else {
             return false;
         }
@@ -214,15 +229,20 @@ class Plugins {
         }
 
         if (plugin && plugin.loaded) {
-            if (plugin.unload) {
-                plugin.unload();
+            try {
+                if (plugin.unload) {
+                    plugin.unload();
+                }
+
+                plugin.loaded = false;
+                delete this._plugins[plugin.name];
+                console.log('[Plugins] Unloaded: ' + plugin.name);
+
+                return true;
+            } catch (e) {
+                console.error('Error unloading "' + plugin.name + '"' + e.stack ? e.stack : e);
+                return false;
             }
-
-            plugin.loaded = false;
-            delete this._plugins[plugin.name];
-            console.log('[Plugins] Unloaded: ' + plugin.name);
-
-            return true;
         } else {
             return false;
         }

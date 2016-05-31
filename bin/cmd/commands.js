@@ -9,12 +9,18 @@ var tag_command = function(bot, event) {
     var text;
     if (event.message.content.startsWith(bot.client.User.mention)) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
+    } else if (event.message.content.startsWith('::')) {
+        text = event.message.content.substring('::'.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
     } else {
         return;
     }
-    var args = text.split(/\s/g);
+    var args = text.match(/[^"\s]+|"(?:\\"|[^"])+"/g);
+    if (args == null) {
+        args = [];
+    }
+    args = args.map(arg => arg.startsWith('"') && arg.endsWith('"') ? arg.substring(1, arg.length - 1) : arg).map(arg => arg.replace(/\\"/g, '"'));
     var cmd = this.get(args[0]);
     if (cmd) {
         bot.hasPermission(event.message.author, cmd.permission).then(function(hasPermission) {
@@ -34,6 +40,8 @@ var regex_commands = function(bot, event) {
     var text;
     if (event.message.content.startsWith(bot.client.User.mention)) {
         text = event.message.content.substring(bot.client.User.mention.length).trim();
+    } else if (event.message.content.startsWith('::')) {
+        text = event.message.content.substring('::'.length).trim();
     } else if (event.message.isPrivate) {
         text = event.message.content;
     } else {

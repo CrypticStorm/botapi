@@ -13,11 +13,17 @@ var Users = {
         this.manager.bot.addDispatch(Events.GUILD_MEMBER_REMOVE, event => this.saveUser(this.manager.bot, event.user));
         this.manager.bot.addDispatch(Events.CHANNEL_CREATE, event => this.saveChannel(this.manager.bot, event.channel));
         this.manager.bot.addDispatch(Events.CHANNEL_DELETE, event => this.deleteChannel(this.manager.bot, event.channelId));
-        this.manager.bot.Users.forEach(member => this.saveUser(this.manager.bot, member));
+        this.manager.bot.addDispatch(Events.GUILD_CREATE, event => this.saveGuild(this.manager.bot, event.guild));
+        this.manager.bot.addDispatch(Events.GUILD_DELETE, event => this.deleteGuild(this.manager.bot, event.guildId));
+        this.manager.bot.Users.forEach(user => this.saveUser(this.manager.bot, user));
+        this.manager.bot.Channels.forEach(channel => this.saveChannel(this.manager.bot, channel));
+        this.manager.bot.Guilds.forEach(guild => this.saveGuild(this.manager.bot, guild));
     },
 
     disable() {
         this.manager.bot.Users.forEach(member => this.saveUser(this.manager.bot, member));
+        this.manager.bot.Channels.forEach(channel => this.saveChannel(this.manager.bot, channel));
+        this.manager.bot.Guilds.forEach(guild => this.saveGuild(this.manager.bot, guild));
     },
 
     saveUser(bot, user) {
@@ -47,8 +53,17 @@ var Users = {
             });
     },
 
-    saveGuild(bot, guild_id) {
+    saveGuild(bot, guild) {
         bot.database.query('INSERT INTO `guilds` (`id`) VALUES (?) ON DUPLICATE KEY UPDATE `id`=`id`;',
+            [guild.id], error => {
+                if (error) {
+                    console.error(error.stack ? error.stack : error);
+                }
+            });
+    },
+
+    deleteGuild(bot, guild_id) {
+        bot.database.query('DELETE FROM `guilds` WHERE `id` = ?;',
             [guild_id], error => {
                 if (error) {
                     console.error(error.stack ? error.stack : error);

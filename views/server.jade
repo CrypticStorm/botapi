@@ -1,0 +1,37 @@
+extends layout
+
+block header
+    include ./nav.jade
+
+block content
+    h1= guild.name
+    hr
+    .row
+        .col-sm-2
+            img.img-responsive.img-rounded(src=guild.avatar)
+        .col-sm-10
+            ul#tabs.nav.nav-tabs(role="tablist")
+                li.active(role="presentation")
+                    a(href="#general", aria-controls="#general", role="tab", data-toggle="tab") General
+                    if permissions.General.MANAGE_GUILD
+                        li(role="presentation")
+                            a(href="#manage", aria-controls="#manage", role="tab", data-toggle="tab") Manage
+            .tab-content
+                #general.tab-pane.active(role="tabpanel")
+                    .row
+                        dl.dl-horizontal
+                            dt Server Name
+                            dd= guild.name
+                        dl.dl-horizontal
+                            dt Server ID
+                            dd= guild.id
+                        
+                #manage.tab-pane(role="tabpanel")
+                    .input-group
+                        input.form-control(type="text")
+                    .btn-group
+                        button.btn.btn-default.btn-lg.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true" aria-expanded="false")
+                        ul.dropdown-menu
+                            each server in user.guilds
+                                li
+                                    a(href="http://botapi.xyz/server/#{server.id}")= server.name

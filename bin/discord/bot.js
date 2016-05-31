@@ -1,12 +1,15 @@
 "use strict";
 
+const ExpressValidator = require('express-validator');
 const Discordie = require('discordie');
 const Promise = require('promise');
 const Login = require('./login');
 const MySQL = require('./mysql');
 const Commands = require('../cmd/commands');
 const Conversations = require('../conversation/conversations');
+const ConversationGenerators = require('../conversation/generators');
 const Plugins = require('../plugin/plugins');
+const Utils = require('../core/utils');
 const fs = require('fs');
 const os = require('os');
 
@@ -22,7 +25,11 @@ class Bot {
         if (!options) {
             options = defaultOptions;
         }
-        this._app = app;
+
+        app.use(ExpressValidator({
+            customValidators: this.customValidators,
+            customSanitizers: this.customSanitizers
+        }));
 
         this._bot = new Discordie();
         this._bot.connect(options.login);
@@ -38,11 +45,11 @@ class Bot {
         this._plugins = new Plugins(this, app);
 
         this._bot.Dispatcher.on(Events.ANY_GATEWAY_READY, () => {
-            fs.writeFile('cfg/token.txt', this._bot.token, () => {
-                if (!options.login.token) {
+            if (!options.login.hasOwnProperty('token')) {
+                fs.writeFile('cfg/token.txt', this._bot.token, () => {
                     console.log('[Login] Wrote login token to disk.');
-                }
-            });
+                });
+            }
             console.log("[Login] Connected as: " + this._bot.User.username);
 
             this._plugins.enableAll();
@@ -54,8 +61,64 @@ class Bot {
         process.on('SIGINT', function() {
             console.log('Shutting down');
             this._plugins.removeAll();
+            this._bot.disconnect();
             process.exit();
         }.bind(this));
+    }
+
+    get customValidators() {
+        const bot = this;
+        return {
+            isInArray(value, array) {
+                return array.find((aValue) => aValue == value) != null;
+            },
+            isNotInArray(value, array) {
+                return array.find((aValue) => aValue == value) == null;
+            },
+            isUser(value, guild) {
+                if (guild) {
+                    try {
+                        return Utils.parseUser(guild, value) != null;
+                    } catch (e) {
+                        return false;
+                    }
+                } else {
+                    return bot.Users.get(value) != null;
+                }
+            },
+            isChannel(value, guild) {
+                if (guild) {
+                    return guild.channels.find(channel => channel.id == value) != null;
+                } else {
+                    return bot.Channels.get(value) != null;
+                }
+            },
+            isGuild(value) {
+                return bot.Guilds.get(value) != null;
+            }
+        }
+    }
+
+    get customSanitizers() {
+        const bot = this;
+        return {
+            toUser(value, guild) {
+                if (guild) {
+                    try {
+                        return Utils.parseUser(guild, value);
+                    } catch (e) {
+                        return null;
+                    }
+                } else {
+                    return bot.Users.get(value);
+                }            },
+            toChannel(value) {
+                return bot.Channels.get(value);
+            },
+            toGuild(value) {
+                return bot.Guilds.get(value);
+            }
+        }
     }
 
     get config() {
@@ -72,6 +135,14 @@ class Bot {
 
     get conversations() {
         return this._conversations;
+    }
+
+    get conv_generators() {
+        return ConversationGenerators;
+    }
+
+    get utils() {
+        return Utils;
     }
 
     get plugins() {
@@ -124,6 +195,10 @@ class Bot {
 
     setStatus(status, game) {
         this._bot.User.setStatus(status, game);
+    }
+
+    get User() {
+        return this._bot.User;
     }
 
     get Guilds() {

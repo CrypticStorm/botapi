@@ -9,24 +9,21 @@ var Info = {
             aliases: ['iu'],
             callback: function (event, bot, text, args) {
                 var user = event.message.author;
-                for (var i in event.message.mentions) {
-                    if (event.message.mentions.hasOwnProperty(i)) {
-                        if (event.message.mentions[i].id != bot.client.User.id) {
-                            user = event.message.mentions[i];
-                            break;
-                        }
+                if (args.length > 1) {
+                    try {
+                        user = bot.utils.parseUser(event.message.guild, args[1]);
+                    } catch (e) {
+                        event.message.reply('Error: ' + e + '\n');
+                        return;
                     }
                 }
+
                 var message = '**' + user.username + '**\n';
                 message += '`ID` ' + user.id + '\n';
                 message += '`Avatar` ' + user.avatarURL + '\n';
                 message += '`Status` ' + user.status;
-                //var gid = user.gameId;
-                //if (gid) {
-                //    message += 'GameID: ' + gid + '\n';
-                //}
 
-                event.message.channel.sendMessage(message);
+                event.message.reply(message);
             }
         },
         {
@@ -51,7 +48,24 @@ var Info = {
                     }
                 }
 
-                event.message.channel.sendMessage(message);
+                event.message.reply(message);
+            }
+        },
+        {
+            name: 'channels',
+            aliases: ['ics', 'chs'],
+            callback: function (event, bot, text, args) {
+                var channels = event.message.guild.channels;
+
+                if (event.message.isPrivate) {
+                    event.message.channel.sendMessage('Direct Message channels have no additional information.');
+                } else {
+                    event.message.author.openDM().then(dm_channel =>
+                        dm_channel.sendMessage('Channels:\n' +
+                            channels.map(channel => '**' + (channel.type === 'text' ? '#' : '') + channel.name + '** ' + channel.id).join('\n')));
+                }
+
+                
             }
         }
     ]

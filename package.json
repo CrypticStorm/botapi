@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "argparse": "^1.0.7",
     "body-parser": "~1.13.2",
     "bootstrap": "^3.3.6",
     "client-oauth2": "^2.2.0",
@@ -21,6 +22,9 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "request": "latest",
-    "serve-favicon": "~2.3.0"
+    "serve-favicon": "~2.3.0",
+    "co": "latest",
+    "challonge": "latest",
+    "express-validator": "latest"
   }
 }
