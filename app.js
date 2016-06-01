@@ -11,9 +11,7 @@ const bot = require('./bin/discord/bot');
 
 const app = express();
 
-console.log(process.env.SESSION_SECRET);
 app.set('port', process.env.PORT);
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
