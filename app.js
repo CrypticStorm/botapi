@@ -10,7 +10,9 @@ const bodyParser = require('body-parser');
 const bot = require('./bin/discord/bot');
 
 const app = express();
-app.bot = new bot(app);
+
+console.log(process.env.SESSION_SECRET);
+app.set('port', process.env.PORT);
 
 
 // view engine setup
@@ -23,13 +25,16 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session({secret: process.env.SESSION_SECRET})); //Please change this
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true
+})); //Please change this
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist/'));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist/'));
 
 /*
->>>>>>> refactor
 app.use('/', routes);
 app.use('/commands', commands);
 
